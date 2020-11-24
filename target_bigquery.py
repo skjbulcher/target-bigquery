@@ -10,6 +10,7 @@ import threading
 import http.client
 import urllib
 import pkg_resources
+import decimal
 
 from jsonschema import validate
 import singer
@@ -31,6 +32,13 @@ try:
 
 except ImportError:
     flags = None
+
+class DecimalEncoder(json.JSONEncoder):
+    def default(self, o):
+        if isinstance(o, decimal.Decimal):
+            return float(o)
+        return super(DecimalEncoder, self).default(o)
+
 
 logging.getLogger('googleapiclient.discovery_cache').setLevel(logging.ERROR)
 logger = singer.get_logger()
@@ -177,7 +185,7 @@ def persist_lines_job(project_id, dataset_id, lines=None, truncate=False, valida
                 msg.record['_sdc_extracted_at'] = str(msg.time_extracted)
 
             # NEWLINE_DELIMITED_JSON expects literal JSON formatted data, with a newline character splitting each row.
-            dat = bytes(json.dumps(msg.record) + '\n', 'UTF-8')
+            dat = bytes(json.dumps(msg.record, cls=DecimalEncoder) + '\n', 'UTF-8')
 
             rows[msg.stream].write(dat)
             #rows[msg.stream].write(bytes(str(msg.record) + '\n', 'UTF-8'))
