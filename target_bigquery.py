@@ -109,7 +109,7 @@ def build_tap_metadata_schema():
             "_sdc_version": {
                 "inclusion": "available",
                 "minimum": -2147483648,
-                "maximum": -2147483647,
+                "maximum": 2147483647,
                 "type": [
                     "null",
                     "integer",
