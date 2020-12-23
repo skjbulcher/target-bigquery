@@ -3,6 +3,7 @@
 import argparse
 import io
 import sys
+import time
 import json
 import logging
 import collections
@@ -130,6 +131,15 @@ def build_tap_metadata_schema():
                     "string",
                 ],
             },
+            "_sdc_sequence": {
+                "inclusion": "available",
+                "minimum": -99999999999999999999,
+                "maximum": 99999999999999999999,
+                "type": [
+                    "null",
+                    "integer",
+                ],
+            },
         }
     }
     return build_schema(metadata_fields, add_metadata_fields=False)
@@ -183,6 +193,7 @@ def persist_lines_job(project_id, dataset_id, lines=None, truncate=False, valida
             if add_tap_metadata:
                 msg.record['_sdc_version'] = msg.version
                 msg.record['_sdc_extracted_at'] = str(msg.time_extracted)
+                msg.record['_sdc_sequence'] = time.time() * 10000000000
 
             # NEWLINE_DELIMITED_JSON expects literal JSON formatted data, with a newline character splitting each row.
             dat = bytes(json.dumps(msg.record, cls=DecimalEncoder) + '\n', 'UTF-8')
@@ -277,6 +288,7 @@ def persist_lines_stream(project_id, dataset_id, lines=None, validate_records=Tr
             if add_tap_metadata:
                 msg.record['_sdc_version'] = msg.version
                 msg.record['_sdc_time_extracted'] = str(msg.time_extracted)
+                msg.record['_sdc_sequence'] = time.time() * 10000000000
 
             errors[msg.stream] = bigquery_client.insert_rows_json(tables[msg.stream], [msg.record])
             rows[msg.stream] += 1
