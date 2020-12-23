@@ -287,7 +287,7 @@ def persist_lines_stream(project_id, dataset_id, lines=None, validate_records=Tr
 
             if add_tap_metadata:
                 msg.record['_sdc_version'] = msg.version
-                msg.record['_sdc_time_extracted'] = str(msg.time_extracted)
+                msg.record['_sdc_extracted_at'] = str(msg.time_extracted)
                 msg.record['_sdc_sequence'] = time.time() * 10000000000
 
             errors[msg.stream] = bigquery_client.insert_rows_json(tables[msg.stream], [msg.record])
